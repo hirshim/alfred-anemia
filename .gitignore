@@ -8,6 +8,31 @@ wheels/
 
 # Virtual environments
 .venv
+venv/
+ENV/
+env/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+.tox/
+.hypothesis/
+
+# Type checking
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Ruff
+.ruff_cache/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 
 # macOS
 .DS_Store
@@ -15,3 +40,7 @@ wheels/
 ._*
 .Spotlight-V100
 .Trashes
+
+# Environment variables
+.env
+.env.local

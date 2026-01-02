@@ -1,58 +1,68 @@
 {
-  // Python設定
-  "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
-  "python.analysis.typeCheckingMode": "basic",
-  "python.analysis.autoImportCompletions": true,
-  "python.analysis.diagnosticMode": "workspace",
-  
-  // Ruff設定（リンター・フォーマッター）
-  "[python]": {
-    "editor.defaultFormatter": "charliermarsh.ruff",
-    "editor.formatOnSave": true,
-    "editor.codeActionsOnSave": {
-      "source.fixAll": "explicit",
-      "source.organizeImports": "explicit"
+    // Python設定
+    "python.defaultInterpreterPath": "${workspaceFolder}/.venv/bin/python",
+    "python.analysis.typeCheckingMode": "basic",
+    "python.analysis.autoImportCompletions": true,
+    "python.analysis.diagnosticMode": "workspace",
+    // Ruff設定（リンター・フォーマッター）
+    "[python]": {
+        "editor.defaultFormatter": "charliermarsh.ruff",
+        "editor.formatOnSave": true,
+        "editor.codeActionsOnSave": {
+            "source.fixAll": "explicit",
+            "source.organizeImports": "explicit"
+        }
+    },
+    // Ruff詳細設定
+    "ruff.enable": true,
+    "ruff.organizeImports": true,
+    "ruff.fixAll": true,
+    // MyPy型チェック設定
+    "mypy-type-checker.typeCheckingMode": "basic",
+    "mypy-type-checker.reportingScope": "workspace",
+    // Blackフォーマッター（Ruffと併用する場合）
+    "black-formatter.args": [
+        "--line-length=88"
+    ],
+    // デバッグ設定
+    "python.debugging.console": "integratedTerminal",
+    // インデント設定
+    "python.indent.switchIndent": true,
+    // ファイル関連
+    "files.exclude": {
+        "**/__pycache__": true,
+        "**/*.pyc": true,
+        "**/.pytest_cache": true,
+        "**/.mypy_cache": true,
+        "**/.ruff_cache": true
+    },
+    // エディタ設定
+    "editor.rulers": [
+        88
+    ],
+    "editor.tabSize": 4,
+    "editor.insertSpaces": true,
+    "editor.trimAutoWhitespace": true,
+    // その他
+    "python.testing.pytestEnabled": true,
+    "python.testing.unittestEnabled": false,
+    "python.testing.nosetestsEnabled": false,
+    // Markdown設定
+    "[markdown]": {
+        "editor.defaultFormatter": "yzhang.markdown-all-in-one",
+        "editor.wordWrap": "on",
+        "editor.quickSuggestions": {
+            "comments": "off",
+            "strings": "off",
+            "other": "off"
+        }
+    },
+    "markdown.preview.breaks": true,
+    "markdown.preview.fontSize": 14,
+    "markdown.preview.lineHeight": 1.6,
+    "markdown.preview.markdownItOptions": {
+        "html": true,
+        "linkify": true,
+        "typographer": true
     }
-  },
-  
-  // Ruff詳細設定
-  "ruff.enable": true,
-  "ruff.organizeImports": true,
-  "ruff.fixAll": true,
-  
-  // MyPy型チェック設定
-  "mypy-type-checker.typeCheckingMode": "basic",
-  "mypy-type-checker.reportingScope": "workspace",
-  
-  // Blackフォーマッター（Ruffと併用する場合）
-  "black-formatter.args": [
-    "--line-length=88"
-  ],
-  
-  // デバッグ設定
-  "python.debugging.console": "integratedTerminal",
-  
-  // インデント設定
-  "python.indent.switchIndent": true,
-  
-  // ファイル関連
-  "files.exclude": {
-    "**/__pycache__": true,
-    "**/*.pyc": true,
-    "**/.pytest_cache": true,
-    "**/.mypy_cache": true,
-    "**/.ruff_cache": true
-  },
-  
-  // エディタ設定
-  "editor.rulers": [88],
-  "editor.tabSize": 4,
-  "editor.insertSpaces": true,
-  "editor.trimAutoWhitespace": true,
-  
-  // その他
-  "python.testing.pytestEnabled": true,
-  "python.testing.unittestEnabled": false,
-  "python.testing.nosetestsEnabled": false
 }
-
