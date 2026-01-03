@@ -11,12 +11,12 @@ ANEMIA_THRESHOLD_MALE = 13.0
 ANEMIA_THRESHOLD_FEMALE = 12.0
 
 
-def check_anemia(gender: str, hb: float) -> dict[str, str]:
+def check_anemia(gender: str, hb: float) -> dict[str, str]:  # noqa: ARG001
     """貧血を鑑別する
 
     Args:
         gender: 性別（'m' または 'f'）
-        hb: ヘモグロビン値（g/dL）
+        hb: ヘモグロビン値（g/dL）（SPEC.md 3.3に従い、出力には含めない）
 
     Returns:
         辞書形式の結果:
@@ -32,13 +32,12 @@ def check_anemia(gender: str, hb: float) -> dict[str, str]:
             "subtitle": "性別: (m or f)",
         }
 
-    # 性別が有効な場合
-    threshold = (
-        ANEMIA_THRESHOLD_MALE if gender_lower == "m" else ANEMIA_THRESHOLD_FEMALE
-    )
-
-    title = f"性別: {gender_lower}, Hb: {hb:.1f}"
-    subtitle = f"Hb: < {threshold:.1f} g/dL → 貧血"
+    # SPEC.md 3.3に従った出力形式
+    title = f"性別: {gender_lower}, Hb: "
+    if gender_lower == "m":
+        subtitle = "Hb: < 13.0 g/dL → 貧血"
+    else:  # gender_lower == "f"
+        subtitle = "Hb: < 12.0 g/dL → 貧血"
 
     return {
         "title": title,
@@ -229,18 +228,15 @@ def main() -> int:
         # 貧血鑑別の実行
         result = check_anemia(gender, hb)
 
-        # 出力形式の決定（出力ファイルの拡張子から判断）
-        output_format = (
-            "json" if args.output and args.output.endswith(".json") else "text"
-        )
-
-        # 結果のフォーマット
-        output = format_output(result, output_format)
-
-        # 出力
+        # 出力形式の決定
+        # Script Filter用にJSONをデフォルト、ファイル出力時は拡張子から判断
         if args.output:
+            output_format = "json" if args.output.endswith(".json") else "text"
+            output = format_output(result, output_format)
             write_output_file(args.output, output)
         else:
+            # Script Filter用にJSON形式で標準出力
+            output = format_output(result, "json")
             print(output)
 
         return 0
