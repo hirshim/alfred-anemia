@@ -385,8 +385,7 @@ class AnemiaWorkflow:
                     "title": option["label"],
                     "subtitle": "選択して次へ",
                     "arg": option["next"],
-                    "valid": True,
-                    "autocomplete": option["label"]
+                    "valid": True
                 })
         elif node["type"] == "result":
             diagnosis_list = ", ".join(node.get("diagnosis", []))
