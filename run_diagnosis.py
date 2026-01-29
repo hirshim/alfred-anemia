@@ -1,3 +1,7 @@
+"""
+Alfredワークフローのエントリーポイントとなるスクリプト。
+引数として現在のノードIDを受け取り、次のステップ（質問または結果）をJSON形式で標準出力します。
+"""
 import sys
 from anemia_flow import AnemiaWorkflow
 

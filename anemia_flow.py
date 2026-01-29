@@ -324,10 +324,31 @@ FLOWCHART = {
 }
 
 class AnemiaWorkflow:
+    """
+    貧血鑑別診断のロジックを管理するクラス。
+    
+    mermaidフローチャートの構造（定義されたJSONノード構造）および
+    成田美和子「貧血の分類と診断の進め方」日内会誌 104:1375-1382, 2015
+    に基づき、次の質問や診断結果を提示します。
+    """
     def __init__(self):
+        """
+        ワークフロー初期化。
+        FLOWCHART定数を読み込みます。
+        """
         self.flowchart = FLOWCHART
 
     def get_node(self, node_id):
+        """
+        指定されたIDのノードを取得します。
+        文字列によるエイリアス（リダイレクト）も解決します。
+        
+        Args:
+            node_id (str): ノードID (例: "root", "A", "C")
+            
+        Returns:
+            dict or None: ノード情報の辞書。存在しない場合はNone。
+        """
         node = self.flowchart.get(node_id)
         # Handle alias/redirection (e.g., "root" -> "A")
         while isinstance(node, str):
@@ -335,6 +356,15 @@ class AnemiaWorkflow:
         return node
 
     def generate_json_output(self, node_id):
+        """
+        Alfred Script Filter用のJSON出力を生成します。
+        
+        Args:
+            node_id (str): 現在のステップを示すノードID
+            
+        Returns:
+            str: Alfredが解釈可能なJSON文字列
+        """
         node = self.get_node(node_id)
         if not node:
             return json.dumps({"items": [{"title": "Error", "subtitle": "Node not found"}]})
