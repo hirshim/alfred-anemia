@@ -5,6 +5,9 @@ on:
     tags:
       - 'v*'
 
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -13,28 +16,12 @@ jobs:
 
       - name: Build Alfred Workflow
         run: |
-          # Create the workflow zip file (Alfred uses .alfredworkflow extension, which is a zip)
-          # We need to exclude development files and git artifacts
           zip -r "AnemiaDiagnosis.alfredworkflow" . -x "*.git*" -x ".github*" -x "tests*" -x "*.md" -x "implementation_plan.md" -x "task.md" -x "walkthrough.md" -x ".DS_Store"
 
-      - name: Create Release
-        id: create_release
-        uses: actions/create-release@v1
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          files: AnemiaDiagnosis.alfredworkflow
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          tag_name: ${{ github.ref }}
-          release_name: Release ${{ github.ref }}
-          draft: false
-          prerelease: false
-
-      - name: Upload Release Asset
-        id: upload-release-asset
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_path: ./AnemiaDiagnosis.alfredworkflow
-          asset_name: AnemiaDiagnosis.alfredworkflow
-          asset_content_type: application/zip
