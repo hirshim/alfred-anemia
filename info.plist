@@ -25,7 +25,7 @@
 		<array>
 			<dict>
 				<key>destinationuid</key>
-				<string>e9b408f1-86d3-4dfe-8898-f82f5d2fc143</string>
+				<string>8d5441fb-768d-4a8c-9687-a3925993ba77</string>
 				<key>modifiers</key>
 				<integer>0</integer>
 				<key>modifiersubtext</key>
@@ -191,7 +191,7 @@
 		</dict>
 	</dict>
 	<key>version</key>
-	<string>1.0.4</string>
+	<string>1.0.5</string>
 	<key>webaddress</key>
 	<string>https://github.com/hirshim/alfred-anemia</string>
 </dict>
