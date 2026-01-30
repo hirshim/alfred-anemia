@@ -2,7 +2,7 @@
 """
 貧血鑑別診断ワークフロー - ステップバイステップ入力方式
 
-入力形式: anemia [WBC] [PLT/Retic] [MCV] ...
+入力形式: anemia [Hb] [WBC] [PLT/Retic] [MCV] ...
 フローチャートに基づき、入力値から次のステップまたは診断結果を返す。
 """
 
@@ -13,11 +13,14 @@ from typing import List, Optional, Dict, Any
 
 # 判定基準
 THRESHOLDS = {
-    "wbc_low": 4000,      # WBC < 4000 で低値
-    "plt_low": 10,        # PLT < 10万 で低値
-    "retic_high": 2.0,    # Retic ≥ 2% で増加
-    "mcv_low": 80,        # MCV < 80 で小球性
-    "mcv_high": 101,      # MCV ≥ 101 で大球性
+    "hb_low_male": 13.0,    # 男性: Hb < 13 で貧血
+    "hb_low_female": 12.0,  # 女性: Hb < 12 で貧血 (簡略化のため12を使用)
+    "hb_anemia": 12.0,      # 簡略化: Hb < 12 で貧血と判定
+    "wbc_low": 4000,        # WBC < 4000 で低値
+    "plt_low": 10,          # PLT < 10万 で低値
+    "retic_high": 2.0,      # Retic ≥ 2% で増加
+    "mcv_low": 80,          # MCV < 80 で小球性
+    "mcv_high": 101,        # MCV ≥ 101 で大球性
 }
 
 
@@ -69,6 +72,7 @@ def diagnose(values: List[float]) -> Dict[str, Any]:
     入力値に基づいて診断フローを実行する。
     
     フロー:
+    0. Hb → 貧血の有無を確認
     1. WBC → 低値なら PLT へ、正常なら Retic へ
     2. PLT → WBC/PLT両方低値なら「汎血球減少→骨髄検査」
     3. Retic → 増加なら溶血/出血、なければ MCV へ
@@ -76,29 +80,50 @@ def diagnose(values: List[float]) -> Dict[str, Any]:
     """
     items = []
     
-    # Step 0: 値がない → WBC入力を促す
+    # Step 0: Hb入力がない → Hb入力を促す
     if len(values) == 0:
         items.append(create_prompt_item(
-            "WBCを入力してください",
-            "4500",
+            "Hb(g/dL)を入力してください",
+            "10.5",
             ""
         ))
         return {"items": items}
     
-    wbc = values[0]
+    hb = values[0]
+    
+    # Step 0.5: 貧血かどうかチェック
+    if hb >= THRESHOLDS["hb_anemia"]:
+        items.append(create_alfred_item(
+            f"✅ Hb {hb:.1f} g/dL - 貧血なし",
+            "WHO基準: 男性<13, 女性<12 で貧血",
+            "",
+            valid=False
+        ))
+        return {"items": items}
+    
+    # 貧血あり → WBC入力へ
+    if len(values) < 2:
+        items.append(create_prompt_item(
+            f"Hb {hb:.1f} (貧血)。WBCを入力してください",
+            "4500",
+            f"{hb:.1f}"
+        ))
+        return {"items": items}
+    
+    wbc = values[1]
     
     # Step 1: WBC評価
     if wbc < THRESHOLDS["wbc_low"]:
         # WBC低値 → PLTを確認
-        if len(values) < 2:
+        if len(values) < 3:
             items.append(create_prompt_item(
-                f"WBC {wbc:.0f} (低値)。PLT(万)を入力してください",
+                f"Hb {hb:.1f}, WBC {wbc:.0f} (低値)。PLT(万)を入力",
                 "8",
-                f"{wbc:.0f}"
+                f"{hb:.1f} {wbc:.0f}"
             ))
             return {"items": items}
         
-        plt = values[1]
+        plt = values[2]
         if plt < THRESHOLDS["plt_low"]:
             # 汎血球減少
             items.append(create_result_item(
@@ -108,23 +133,34 @@ def diagnose(values: List[float]) -> Dict[str, Any]:
             ))
         else:
             # WBC低値だがPLT正常 → Reticへ
-            items.append(create_prompt_item(
-                f"WBC {wbc:.0f} (低値), PLT {plt:.0f}万 (正常)。Retic(%)を入力",
-                "1.5",
-                f"{wbc:.0f} {plt:.0f}"
-            ))
+            if len(values) < 4:
+                items.append(create_prompt_item(
+                    f"Hb {hb:.1f}, WBC {wbc:.0f} (低値), PLT {plt:.0f}万。Retic(%)を入力",
+                    "1.5",
+                    f"{hb:.1f} {wbc:.0f} {plt:.0f}"
+                ))
+                return {"items": items}
+            retic = values[3]
+            return evaluate_retic_and_mcv(values, hb, wbc, retic, 4)
         return {"items": items}
     
     # Step 2: WBC正常 → Retic確認
-    if len(values) < 2:
+    if len(values) < 3:
         items.append(create_prompt_item(
-            f"WBC {wbc:.0f} (正常)。Retic(%)を入力してください",
+            f"Hb {hb:.1f}, WBC {wbc:.0f} (正常)。Retic(%)を入力",
             "1.5",
-            f"{wbc:.0f}"
+            f"{hb:.1f} {wbc:.0f}"
         ))
         return {"items": items}
     
-    retic = values[1]
+    retic = values[2]
+    return evaluate_retic_and_mcv(values, hb, wbc, retic, 3)
+
+
+def evaluate_retic_and_mcv(values: List[float], hb: float, wbc: float, retic: float, mcv_index: int) -> Dict[str, Any]:
+    """網赤血球とMCVを評価する"""
+    items = []
+    values_str = " ".join(f"{v:.1f}" if v < 100 else f"{v:.0f}" for v in values[:mcv_index])
     
     # Step 3: Retic評価
     if retic >= THRESHOLDS["retic_high"]:
@@ -142,15 +178,15 @@ def diagnose(values: List[float]) -> Dict[str, Any]:
         return {"items": items}
     
     # Step 4: Retic正常 → MCV確認
-    if len(values) < 3:
+    if len(values) < mcv_index + 1:
         items.append(create_prompt_item(
-            f"WBC {wbc:.0f}, Retic {retic:.1f}% (正常)。MCVを入力",
+            f"Retic {retic:.1f}% (正常)。MCVを入力",
             "85",
-            f"{wbc:.0f} {retic:.1f}"
+            values_str
         ))
         return {"items": items}
     
-    mcv = values[2]
+    mcv = values[mcv_index]
     
     # Step 5: MCV評価で分岐
     if mcv >= THRESHOLDS["mcv_high"]:
