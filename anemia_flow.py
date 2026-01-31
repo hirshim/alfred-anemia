@@ -1,5 +1,4 @@
 import json
-import sys
 
 # Define the flowchart data structure
 FLOWCHART = {
@@ -205,7 +204,7 @@ FLOWCHART = {
             {"label": "EPO低値", "next": "N11"},
             {"label": "EPO正常〜高値 (フェリチンなど確認)", "next": "N12"},
             {"label": "その他 (生化学検査など)", "next": "N14"},
-             {"label": "赤芽球癆疑い", "next": "N16"}
+            {"label": "赤芽球癆疑い", "next": "N16"}
         ]
     },
     "N11": {
@@ -255,7 +254,7 @@ FLOWCHART = {
         "type": "question",
         "options": [
             {"label": "あり", "next": "S3"},
-            {"label": "なし", "next": "S5"} # Fallback or specific node? Flowchart implies checks. Assume if no hemolysis signs, check iron.
+            {"label": "なし", "next": "S5"}
         ]
     },
     "S3": {
@@ -282,13 +281,18 @@ FLOWCHART = {
         "type": "question",
         "options": [
             {"label": "あり", "next": "S8"},
-            {"label": "なし (詳細精査へ)", "next": "S8"} # Simplified for now as flowchart merges here essentially
+            {"label": "なし", "next": "S7_OTHER"}
         ]
     },
     "S8": {
         "text": "慢性炎症に伴う貧血(ACD)などが考えられます。",
         "type": "result",
         "diagnosis": ["慢性炎症に伴う貧血 (ACD)"]
+    },
+    "S7_OTHER": {
+        "text": "炎症所見なしで Fe↓・TIBC正常〜↓・フェリチン正常〜↑のパターンです。\n鉄芽球性貧血などの可能性を含め、骨髄検査を検討してください。",
+        "type": "result",
+        "diagnosis": ["鉄芽球性貧血の可能性", "詳細不明 (要精査)"]
     },
     "S9": {
         "text": "TIBCの著明低下はありますか？",
@@ -308,7 +312,7 @@ FLOWCHART = {
         "type": "question",
         "options": [
             {"label": "はい", "next": "S12"},
-            {"label": "いいえ (その他)", "next": "S_OTHER"} # Added explicit end
+            {"label": "いいえ (その他)", "next": "S_OTHER"}
         ]
     },
     "S12": {
@@ -351,8 +355,12 @@ class AnemiaWorkflow:
         """
         node = self.flowchart.get(node_id)
         # Handle alias/redirection (e.g., "root" -> "A")
-        while isinstance(node, str):
+        max_depth = 10
+        while isinstance(node, str) and max_depth > 0:
             node = self.flowchart.get(node)
+            max_depth -= 1
+        if isinstance(node, str):
+            return None
         return node
 
     def generate_json_output(self, node_id):
@@ -376,7 +384,7 @@ class AnemiaWorkflow:
             "title": node["text"].split("\n")[0],
             "subtitle": "\n".join(node["text"].split("\n")[1:]) if "\n" in node["text"] else "",
             "valid": False,
-            "icon": {"path": "icon.png"} # Assuming icon exists or default
+            "icon": {"path": "icon.png"}
         })
 
         if node["type"] == "question":

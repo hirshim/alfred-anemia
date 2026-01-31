@@ -102,7 +102,7 @@
 				<key>argumenttype</key>
 				<integer>1</integer>
 				<key>escaping</key>
-				<integer>102</integer>
+				<integer>0</integer>
 				<key>keyword</key>
 				<string></string>
 				<key>queuedelaycustom</key>
@@ -126,7 +126,7 @@
 				<key>title</key>
 				<string>貧血鑑別診断</string>
 				<key>withspace</key>
-				<true/>
+				<false/>
 			</dict>
 			<key>type</key>
 			<string>alfred.workflow.input.scriptfilter</string>
